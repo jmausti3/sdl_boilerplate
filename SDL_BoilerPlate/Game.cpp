@@ -2,50 +2,65 @@
 #include "Game.h"
 
 
-SDL_Renderer* g_pRenderer = 0;
 
-//The window we'll be rendering to
-SDL_Window* gWindow = NULL;
+Game::Game(){
 
-//The surface contained by the window
-SDL_Surface* gScreenSurface = NULL;
+//    SDL_Texture* loadTexture( std::string path );
+
+    SDL_Renderer* g_pRenderer = 0;
+    //The window we'll be rendering to
+    SDL_Window* gWindow = NULL;
+    //The surface contained by the window
+    SDL_Surface* gScreenSurface = NULL;
+    SDL_Surface* tmpSurface = NULL;
+}
+
+
+ Game::~Game(){
+     g_pRenderer = 0;
+     gWindow = NULL;
+     gScreenSurface = NULL;
+     tmpSurface = NULL;
+ }
 
 bool Game::loadMedia(){
 
     //Loading success flag
     bool success = true;
     //Load splash image
-    gScreenSurface = SDL_LoadBMP( "/Users/jmausti3/Developer/c_cpp/SDL_BoilerPlate/Media/hello_world.bmp" );
-    if( gScreenSurface == NULL ) { printf( "Unable to load image %s! SDL Error: %s\n", "", SDL_GetError() );
+    tmpSurface = SDL_LoadBMP( "/Users/jmausti3/Developer/c_cpp/SDL_BoilerPlate/Media/hello_world.bmp" );
+    if( tmpSurface == NULL ) {
+        printf( "Unable to load image %s! SDL Error: %s\n", "", SDL_GetError() );
         success = false;
     }
     return success;
 }
 
-
 bool Game::init(char const *title, int xpos, int ypos, int height, int width, int flags, bool fullScreen) {
 
-    m_bRunning = true;
-
-    SDL_WINDOW_FULLSCREEN;
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) >= 0){
 
         gWindow = SDL_CreateWindow(title, xpos, ypos, height, width, flags);
 
         if(gWindow != 0 ){
-//            g_pRenderer = SDL_CreateRenderer(gWindow, -1, 0);
-            gScreenSurface = SDL_GetWindowSurface( gWindow );
+            g_pRenderer = SDL_CreateRenderer(gWindow, -1, 0);
         }
         if(gWindow !=0){
-            printf("init successful");
-            g_pRenderer  = SDL_CreateRenderer(gWindow, -1, 0);
+            printf("init successful\n");
             if(g_pRenderer != 0 ){
-                printf("rednerer creation successful\n");
-                SDL_SetRenderDrawColor(g_pRenderer, 255, 255, 255, 255);
+                printf("renderer creation successful\n");
+                SDL_SetRenderDrawColor(g_pRenderer, 155, 155, 155, 255);
+
+                //Initialize PNG loading
+                int imgFlags = IMG_INIT_PNG;
+                if( !( IMG_Init( imgFlags ) & imgFlags ) ) {
+                    printf( "SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError() );
+                    success = false;
+                }
             }else {
                 printf("render init fail\n");
                 return false;
-            }
+        }
         }else {
             printf("window init fail");
         }
@@ -54,17 +69,22 @@ bool Game::init(char const *title, int xpos, int ypos, int height, int width, in
         return false; // sdl could not initialize
     }
 
+    m_bRunning = true;
+
     return true;
 }
 
 void Game::render(){
-    SDL_RenderClear(g_pRenderer); // clear renerer to dthe draw color
-
+    SDL_RenderClear(g_pRenderer); // clear renderer to the draw color
     SDL_RenderPresent(g_pRenderer); // draw to the screen
 }
 
 void Game::clean(){
     printf("cleaning game");
+    if(tmpSurface != NULL)
+    SDL_FreeSurface( tmpSurface );
+    if(gScreenSurface != NULL)
+    SDL_FreeSurface( gScreenSurface );
     SDL_DestroyWindow(gWindow);
     SDL_DestroyRenderer(g_pRenderer);
     SDL_Quit();
@@ -77,8 +97,65 @@ void Game::handleEvents(){
             case SDL_QUIT:
                 m_bRunning = false;
                 break;
+            case SDL_KEYDOWN:
+                handleKeyEvent(event.key.keysym.sym);
+                break;
             default:
                 break;
         }
     }
 }
+
+void Game::handleKeyEvent(SDL_Keycode keyPressed) {
+
+    switch (keyPressed) {
+
+        case SDLK_RIGHT:
+            printf("right pressed\n");
+            break;
+        case SDLK_LEFT:
+            printf("left pressed\n");
+            break;
+        case SDLK_DOWN:
+            printf("down pressed\n");
+            break;
+        case SDLK_UP:
+            printf("up pressed\n");
+            break;
+        case SDLK_SPACE:
+            printf("space pressed\n");
+
+            if(!loadMedia()){
+                printf("unable to load surface\n");
+                m_bRunning = false;
+                break;
+            } else {
+                loadMedia();
+                break;
+            }
+
+        case SDLK_ESCAPE:
+            printf("escape pressed\n");
+            m_bRunning = false;
+            break;
+
+
+        default:
+            break;
+    }
+}
+
+bool Game::running() {
+    if(!m_bRunning)
+        return false;
+    else
+        return true;
+}
+
+void Game::update() {
+
+    SDL_BlitSurface(tmpSurface, NULL, gScreenSurface, NULL);
+    SDL_UpdateWindowSurface( gWindow );
+}
+
+
