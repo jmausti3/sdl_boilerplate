@@ -1,4 +1,7 @@
 #include <SDL2/SDL_video.h>
+#include <SDL2_image/SDL_image.h>
+#include <iosfwd>
+#include <string>
 #include "Game.h"
 
 
@@ -23,6 +26,21 @@ Game::Game(){
      tmpSurface = NULL;
  }
 
+SDL_Texture* Game::loadTexture( std::string path ){
+    SDL_Texture* newTexture = NULL;
+    SDL_Surface* loadedSurface = IMG_Load( path.c_str() );
+    if( loadedSurface == NULL ){
+        printf( "Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError() );
+    }else{
+        newTexture = SDL_CreateTextureFromSurface( g_pRenderer, loadedSurface );
+        if( newTexture == NULL ){
+            printf( "Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError() );
+        }
+        SDL_FreeSurface( loadedSurface );
+    }
+    return newTexture;
+}
+
 bool Game::loadMedia(){
 
     //Loading success flag
@@ -43,7 +61,7 @@ bool Game::init(char const *title, int xpos, int ypos, int height, int width, in
         gWindow = SDL_CreateWindow(title, xpos, ypos, height, width, flags);
 
         if(gWindow != 0 ){
-            g_pRenderer = SDL_CreateRenderer(gWindow, -1, 0);
+            SDL_CreateRenderer(gWindow, -1, 0);
         }
         if(gWindow !=0){
             printf("init successful\n");
@@ -138,7 +156,6 @@ void Game::handleKeyEvent(SDL_Keycode keyPressed) {
             printf("escape pressed\n");
             m_bRunning = false;
             break;
-
 
         default:
             break;

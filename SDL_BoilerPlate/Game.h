@@ -16,7 +16,8 @@ class Game{
 
         bool loadMedia();
         bool running();
-
+        SDL_Texture *loadTexture(std::string path);
+        void handleKeyEvent(SDL_Keycode keyPressed);
         bool init(char const *title, int xpos, int ypos, int height, int width, int flags, bool fullScreen);
 
     private:
@@ -33,7 +34,8 @@ class Game{
         SDL_Surface* gScreenSurface;
         SDL_Surface* tmpSurface;
 
-        void handleKeyEvent(SDL_Keycode keyPressed);
+        SDL_Texture* gTexture = NULL;
+
 };
 
 #endif /* defined(__Game__) */
