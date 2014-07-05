@@ -46,8 +46,8 @@ bool Game::loadMedia(){
     //Loading success flag
     bool success = true;
     //Load splash image
-    tmpSurface = SDL_LoadBMP( "/Users/jmausti3/Developer/c_cpp/SDL_BoilerPlate/Media/hello_world.bmp" );
-    if( tmpSurface == NULL ) {
+    gTexture = loadTexture( "/Users/jmausti3/Developer/c_cpp/SDL_BoilerPlate/Media/hello_world.bmp" );
+    if( gTexture == NULL ) {
         printf( "Unable to load image %s! SDL Error: %s\n", "", SDL_GetError() );
         success = false;
     }
@@ -61,7 +61,7 @@ bool Game::init(char const *title, int xpos, int ypos, int height, int width, in
         gWindow = SDL_CreateWindow(title, xpos, ypos, height, width, flags);
 
         if(gWindow != 0 ){
-            SDL_CreateRenderer(gWindow, -1, 0);
+            g_pRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED);
         }
         if(gWindow !=0){
             printf("init successful\n");
@@ -94,17 +94,29 @@ bool Game::init(char const *title, int xpos, int ypos, int height, int width, in
 
 void Game::render(){
     SDL_RenderClear(g_pRenderer); // clear renderer to the draw color
+    //Render texture to screen
+    SDL_RenderCopy( g_pRenderer, gTexture, NULL, NULL );
     SDL_RenderPresent(g_pRenderer); // draw to the screen
+
+
 }
 
 void Game::clean(){
     printf("cleaning game");
+    if(gTexture != NULL)
+        SDL_DestroyTexture( gTexture );
     if(tmpSurface != NULL)
-    SDL_FreeSurface( tmpSurface );
+        SDL_FreeSurface( tmpSurface );
     if(gScreenSurface != NULL)
-    SDL_FreeSurface( gScreenSurface );
+        SDL_FreeSurface( gScreenSurface );
+
     SDL_DestroyWindow(gWindow);
     SDL_DestroyRenderer(g_pRenderer);
+
+    gWindow = NULL;
+    g_pRenderer = NULL;
+
+    IMG_Quit();
     SDL_Quit();
 }
 
@@ -170,9 +182,9 @@ bool Game::running() {
 }
 
 void Game::update() {
-
-    SDL_BlitSurface(tmpSurface, NULL, gScreenSurface, NULL);
-    SDL_UpdateWindowSurface( gWindow );
+//
+//    SDL_BlitSurface(tmpSurface, NULL, gScreenSurface, NULL);
+//    SDL_UpdateWindowSurface( gWindow );
 }
 
 
